@@ -30,7 +30,7 @@ pub struct Route {
     ///         .with_body(body)
     /// }
     /// ``` 
-    pub handler: Handler
+    pub handler: Box<Handler>
 }
 
 impl Route {
@@ -84,7 +84,7 @@ impl Default for Route {
         Route {
             method: Method::Get,
             path: Path::new("/"),
-            handler: handlers::not_implemented_handler
+            handler: Box::new(&handlers::not_implemented_handler)
         }
     }
 }
