@@ -12,10 +12,10 @@ use std::str::FromStr;
 fn test_get_route() {
     let request = Request::new(Method::Get, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_get_hello(_: Request) -> Response { Response::new() };
-    fn handle_get_root(_: Request) -> Response { unimplemented!() };
-    fn handle_get_foo(_: Request) -> Response { unimplemented!() };
-    fn handle_post_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_get_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_get_root(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
+    fn handle_get_foo(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::get("/hello").using(handle_get_hello))
@@ -33,10 +33,10 @@ fn test_get_route() {
 fn test_post_route() {
     let request = Request::new(Method::Post, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_post_hello(_: Request) -> Response { Response::new() };
-    fn handle_post_root(_: Request) -> Response { unimplemented!() };
-    fn handle_post_foo(_: Request) -> Response { unimplemented!() };
-    fn handle_get_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_post_root(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
+    fn handle_post_foo(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
+    fn handle_get_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::post("/hello").using(handle_post_hello))
@@ -54,8 +54,8 @@ fn test_post_route() {
 fn test_delete_route() {
     let request = Request::new(Method::Delete, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_delete_hello(_: Request) -> Response { Response::new() };
-    fn handle_post_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_delete_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::delete("/hello").using(handle_delete_hello))
@@ -71,8 +71,8 @@ fn test_delete_route() {
 fn test_options_route() {
     let request = Request::new(Method::Options, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_options_hello(_: Request) -> Response { Response::new() };
-    fn handle_post_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_options_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::options("/hello").using(handle_options_hello))
@@ -88,8 +88,8 @@ fn test_options_route() {
 fn test_put_route() {
     let request = Request::new(Method::Put, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_put_hello(_: Request) -> Response { Response::new() };
-    fn handle_post_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_put_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::put("/hello").using(handle_put_hello))
@@ -105,8 +105,8 @@ fn test_put_route() {
 fn test_head_route() {
     let request = Request::new(Method::Head, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_head_hello(_: Request) -> Response { Response::new() };
-    fn handle_post_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_head_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::head("/hello").using(handle_head_hello))
@@ -122,8 +122,8 @@ fn test_head_route() {
 fn test_trace_route() {
     let request = Request::new(Method::Trace, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_trace_hello(_: Request) -> Response { Response::new() };
-    fn handle_post_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_trace_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::trace("/hello").using(handle_trace_hello))
@@ -139,8 +139,8 @@ fn test_trace_route() {
 fn test_patch_route() {
     let request = Request::new(Method::Patch, Uri::from_str("http://www.example.com/hello").unwrap());
 
-    fn handle_patch_hello(_: Request) -> Response { Response::new() };
-    fn handle_post_hello(_: Request) -> Response { unimplemented!() };
+    fn handle_patch_hello(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_post_hello(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::patch("/hello").using(handle_patch_hello))
@@ -156,8 +156,8 @@ fn test_patch_route() {
 fn test_no_route() {
     let request = Request::new(Method::Get, Uri::from_str("http://www.example.com/notfound").unwrap());
 
-    fn handle_get_foo(_: Request) -> Response { unimplemented!() };
-    fn handle_get_bar(_: Request) -> Response { unimplemented!() };
+    fn handle_get_foo(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
+    fn handle_get_bar(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::patch("/foo").using(handle_get_foo))
@@ -177,8 +177,8 @@ fn test_no_route() {
 fn test_regex_path() {
     let request = Request::new(Method::Get, Uri::from_str("http://www.example.com/foo/bar").unwrap());
 
-    fn handle_regex_foo(_: Request) -> Response { Response::new() };
-    fn handle_regex_bar(_: Request) -> Response { unimplemented!() };
+    fn handle_regex_foo(_: Request) -> FutureOr<Response, hyper::Error> { FutureOr::ok_sync(Response::new()) };
+    fn handle_regex_bar(_: Request) -> FutureOr<Response, hyper::Error> { unimplemented!() };
 
     let router = RouterBuilder::new()
         .add(Route::get(r"/foo/.*?").using(handle_regex_foo))

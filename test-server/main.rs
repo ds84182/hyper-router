@@ -4,14 +4,16 @@ extern crate hyper_router;
 use hyper::server::{Http, Request, Response};
 use hyper::Method;
 use hyper::header::{ContentLength, ContentType};
-use hyper_router::{Route, RouterBuilder, RouterService};
+use hyper_router::{Route, RouterBuilder, RouterService, FutureOr};
 
-fn request_handler(_: Request) -> Response {
+fn request_handler(_: Request) -> FutureOr<Response, hyper::Error> {
     let body = "Hello World";
-    Response::new()
-        .with_header(ContentLength(body.len() as u64))
-        .with_header(ContentType::plaintext())
-        .with_body(body)
+    FutureOr::ok_sync(
+        Response::new()
+            .with_header(ContentLength(body.len() as u64))
+            .with_header(ContentType::plaintext())
+            .with_body(body)
+    )
 }
 
 fn router_service() -> Result<RouterService, std::io::Error> {

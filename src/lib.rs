@@ -22,14 +22,16 @@
 //!
 //! use hyper::server::{Http, Request, Response};
 //! use hyper::header::{ContentLength, ContentType};
-//! use hyper_router::{Route, RouterBuilder, RouterService};
+//! use hyper_router::{Route, RouterBuilder, RouterService, FutureOr};
 //! 
-//! fn basic_handler(_: Request) -> Response {
+//! fn basic_handler(_: Request) -> FutureOr<Response, hyper::Error> {
 //!     let body = "Hello World";
-//!     Response::new()
-//!         .with_header(ContentLength(body.len() as u64))
-//!         .with_header(ContentType::plaintext())
-//!         .with_body(body)
+//!     FutureOr::ok_sync(
+//!         Response::new()
+//!             .with_header(ContentLength(body.len() as u64))
+//!             .with_header(ContentType::plaintext())
+//!             .with_body(body)
+//!     )
 //! }
 //!
 //! fn router_service() -> Result<RouterService, std::io::Error> {
@@ -69,7 +71,8 @@
 extern crate futures;
 extern crate hyper;
 
-use futures::future::FutureResult;
+use futures::BoxFuture;
+use futures::future::{Either, FutureResult};
 use hyper::header::ContentLength;
 use hyper::server::{Service, Request, Response};
 use hyper::StatusCode;
@@ -85,7 +88,18 @@ pub use self::route::Route;
 pub use self::route::RouteBuilder;
 pub use self::builder::RouterBuilder;
 
-pub type Handler = Fn(Request) -> Response;
+pub enum FutureOr<T, E> {
+    Sync(Result<T, E>),
+    Async(BoxFuture<T, E>)
+}
+
+impl<T, E> FutureOr<T, E> {
+    pub fn ok_sync(value: T) -> FutureOr<T, E> {
+        FutureOr::Sync(Ok(value))
+    }
+}
+
+pub type Handler = Fn(Request) -> FutureOr<Response, hyper::Error>;
 pub type HttpResult<T> = Result<T,StatusCode>;
 
 /// This is the one. The router.
@@ -150,7 +164,7 @@ impl Router {
 #[derive(Debug)]
 pub struct RouterService {
     pub router: Router,
-    pub error_handler: fn(StatusCode) -> Response
+    pub error_handler: fn(StatusCode) -> FutureOr<Response, hyper::Error>
 }
 
 impl RouterService {
@@ -161,16 +175,16 @@ impl RouterService {
         }
     }
 
-    fn default_error_handler(status_code: StatusCode) -> Response {
+    fn default_error_handler(status_code: StatusCode) -> FutureOr<Response, hyper::Error> {
         let error = "Routing error: page not found";
         let response = Response::new()
             .with_header(ContentLength(error.len() as u64))
             .with_body(error);
 
-        match status_code {
+        FutureOr::ok_sync(match status_code {
             StatusCode::NotFound => response.with_status(StatusCode::NotFound),
             _ => response.with_status(StatusCode::InternalServerError)
-        }
+        })
     }
 }
 
@@ -178,14 +192,16 @@ impl Service for RouterService {
     type Request = Request;
     type Response = Response;
     type Error = hyper::Error;
-    type Future = FutureResult<Response, hyper::Error>;
+    type Future = Either<FutureResult<Response, hyper::Error>, BoxFuture<Response, hyper::Error>>;
 
     fn call(&self, request: Request) -> Self::Future {
-        futures::future::ok(
-            match self.router.find_handler(&request) {
-                Ok(handler) => handler(request),
-                Err(status_code) => (self.error_handler)(status_code)
-            }
-        )
+        let future_or = match self.router.find_handler(&request) {
+            Ok(handler) => handler(request),
+            Err(status_code) => (self.error_handler)(status_code)
+        };
+        match future_or {
+            FutureOr::Sync(res) => Either::A(futures::future::result(res)),
+            FutureOr::Async(boxed) => Either::B(boxed)
+        }
     }
 }
